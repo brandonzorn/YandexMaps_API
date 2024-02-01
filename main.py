@@ -6,8 +6,8 @@ from PySide6.QtWidgets import *
 from ui import Ui_Dialog
 import requests
 
-URL = 'http://static-maps.yandex.ru/1.x'
-GEOCODE_URL = 'http://geocode-maps.yandex.ru/1.x/'
+URL = "http://static-maps.yandex.ru/1.x"
+GEOCODE_URL = "http://geocode-maps.yandex.ru/1.x/"
 
 
 class Map:
@@ -15,24 +15,24 @@ class Map:
         self.lon = 40.109920
         self.lat = 44.601329
         self.zoom = 16
-        self.type: str = 'map'
-        self.types = ['map', 'sat,skl', 'sat']
+        self.type: str = "map"
+        self.types = ["map", "sat,skl", "sat"]
         self.point = {}
-        self.address: str = ''
+        self.address: str = ""
         self.display_postal = False
         self.postal = None
 
     @property
     def ll(self):
-        return f'{self.lon},{self.lat}'
+        return f"{self.lon},{self.lat}"
 
     def get_map_file(self):
-        params = {'ll': self.ll, 'z': self.zoom, 'l': self.type}
+        params = {"ll": self.ll, "z": self.zoom, "l": self.type}
         params.update(self.point)
         response = requests.get(URL, params=params)
-        with open('map.jpg', 'wb') as file:
+        with open("map.jpg", "wb") as file:
             file.write(response.content)
-        return 'map.jpg'
+        return "map.jpg"
 
     def update_zoom(self, count: int):
         if self.zoom + count < 0 or self.zoom + count > 21:
@@ -62,21 +62,21 @@ class Map:
 
     def get_address(self):
         if self.postal and self.display_postal:
-            return self.address + f' / {self.postal}'
+            return self.address + f" / {self.postal}"
         return self.address
 
     def set_geocode(self, text: str):
-        params = {'apikey': '40d1649f-0493-4b70-98ba-98533de7710b', 'geocode': text, 'format': 'json'}
+        params = {"apikey": "40d1649f-0493-4b70-98ba-98533de7710b", "geocode": text, "format": "json"}
         response = requests.get(GEOCODE_URL, params=params)
-        if response.status_code != 200 or not response.json()['response']['GeoObjectCollection']['featureMember']:
+        if response.status_code != 200 or not response.json()["response"]["GeoObjectCollection"]["featureMember"]:
             return
-        pos: str = response.json()['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos']
+        pos: str = response.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"]["pos"]
         self.lon, self.lat = [float(i) for i in pos.split()]
-        self.point = {'pt': f'{self.ll},vkbkm'}
-        self.address = [response.json()['response']['GeoObjectCollection']['featureMember'][0]
-                        ['GeoObject']['metaDataProperty']['GeocoderMetaData']['text']][0]
-        self.postal = [response.json()['response']['GeoObjectCollection']['featureMember'][0]
-                       ['GeoObject']['metaDataProperty']['GeocoderMetaData']['Address'].get('postal_code')][0]
+        self.point = {"pt": f"{self.ll},vkbkm"}
+        self.address = [response.json()["response"]["GeoObjectCollection"]["featureMember"][0]
+                        ["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["text"]][0]
+        self.postal = [response.json()["response"]["GeoObjectCollection"]["featureMember"][0]
+                       ["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["Address"].get("postal_code")][0]
 
 
 class App(QDialog):
@@ -124,7 +124,7 @@ class App(QDialog):
 
     def update_image(self):
         self.ui.img.setPixmap(QPixmap(self.map.get_map_file()))
-        path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'map.jpg')
+        path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "map.jpg")
         os.remove(path)
         self.ui.adress.setText(self.map.get_address())
         self.ui.checkBox.setCheckable(bool(self.map.postal))
@@ -136,12 +136,12 @@ class App(QDialog):
 
     def reset(self):
         self.map.point = {}
-        self.map.address = ''
+        self.map.address = ""
         self.map.postal = None
         self.update_image()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.RoundPreferFloor)
     app = QApplication(sys.argv)
     a = App()
